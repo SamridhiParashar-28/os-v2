@@ -1,0 +1,32 @@
+{
+  "name": "os-sync-memory-visualizer",
+  "version": "1.0.0",
+  "description": "Educational Visualizer for Process Synchronization & Memory Management in Operating Systems",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "operating-systems",
+    "process-synchronization",
+    "semaphores",
+    "memory-management",
+    "paging",
+    "segmentation",
+    "first-fit",
+    "best-fit",
+    "worst-fit",
+    "producer-consumer",
+    "dining-philosophers",
+    "readers-writers",
+    "sleeping-barber"
+  ],
+  "author": "OS Visualizer Team",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
+

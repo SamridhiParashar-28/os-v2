@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Process Synchronization & Memory Management Visualizer | OS Lab</title>
+  
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/sync.css">
+  <link rel="stylesheet" href="css/memory.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand" data-tab="home">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>OS Visualizer</h1>
+          <span>Synchronization & Memory Management</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" role="tablist">
+        <button class="nav-tab-btn active" data-tab="home" role="tab">
+          <span>🏠 Overview</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="sync" role="tab">
+          <span>🔄 Synchronization</span>
+          <span class="badge-count">4</span>
+        </button>
+        <button class="nav-tab-btn" data-tab="memory" role="tab">
+          <span>💾 Memory</span>
+          <span class="badge-count">5</span>
+        </button>
+      </nav>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <!-- Theme Toggle -->
+        <button class="icon-btn" id="theme-toggle-btn" title="Toggle Dark/Light Theme">
+          🌙
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+
+    <!-- ======================================================== -->
+    <!-- TAB 1: HOME / OVERVIEW DASHBOARD                         -->
+    <!-- ======================================================== -->
+    <section class="tab-content active" id="tab-home">
+      <!-- Hero Banner -->
+      <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(20, 184, 166, 0.12), rgba(15, 23, 42, 0.9)); border-color: rgba(20, 184, 166, 0.3); padding: 2rem;">
+        <div style="max-width: 900px;">
+          <span class="badge badge-teal" style="margin-bottom:0.75rem;">Interactive PBL Visualizer</span>
+          <h2 style="font-size:2.2rem; margin-bottom:0.75rem; letter-spacing:-0.02em;">
+            Process Synchronization & Memory Management Visualizer
+          </h2>
+          <p style="font-size:1.05rem; color:var(--text-secondary); margin-bottom:1.5rem; line-height:1.6;">
+            A project-based visual learning environment to explore and interact with classic concurrency synchronization problems and core memory management architectures in modern operating systems.
+          </p>
+          <div style="display:flex; gap:0.85rem; flex-wrap:wrap;">
+            <button class="btn btn-primary" data-jump-tab="sync" data-jump-subtab="producer-consumer">
+              Explore Process Synchronization →
+            </button>
+            <button class="btn btn-outline-teal" data-jump-tab="memory" data-jump-subtab="contiguous">
+              Explore Memory Allocation →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Module Feature Cards -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(340px, 1fr)); gap:1.5rem; margin-bottom:1.5rem;">
+        
+        <!-- Module 1: Concurrency & Synchronization -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🔄 Process Synchronization</h3>
+            <span class="badge badge-teal">4 Classic Models</span>
+          </div>
+          <p style="margin-bottom:1rem; font-size:0.875rem;">
+            Understand race conditions, critical section entry/exit, counting and binary semaphores, and deadlock prevention through interactive state machines.
+          </p>
+          <div style="display:flex; flex-direction:column; gap:0.6rem;">
+            <a href="#" class="btn btn-secondary" style="justify-content:flex-start;" data-jump-tab="sync" data-jump-subtab="producer-consumer">
+              📦 <strong>Producer-Consumer</strong> — Bounded buffer with mutex, full & empty semaphores
+            </a>
+            <a href="#" class="btn btn-secondary" style="justify-content:flex-start;" data-jump-tab="sync" data-jump-subtab="readers-writers">
+              📖 <strong>Readers-Writers</strong> — Shared read concurrency vs exclusive writer exclusion
+            </a>
+            <a href="#" class="btn btn-secondary" style="justify-content:flex-start;" data-jump-tab="sync" data-jump-subtab="dining-philosophers">
+              🍝 <strong>Dining Philosophers</strong> — Resource hierarchy, circular wait & deadlock simulation
+            </a>
+            <a href="#" class="btn btn-secondary" style="justify-content:flex-start;" data-jump-tab="sync" data-jump-subtab="sleeping-barber">
+              💈 <strong>Sleeping Barber</strong> — Process rendezvous, customer queue & capacity balking
+            </a>
+          </div>
+        </div>
+
+        <!-- Module 2: Memory Management -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">💾 Memory Management</h3>
+            <span class="badge badge-info">5 Core Architectures</span>
+          </div>
+          <p style="margin-bottom:1rem; font-size:0.875rem;">
+            Analyze how the Operating System coordinates physical RAM and virtual addressing to prevent fragmentation and enforce memory isolation.
+          </p>
+          <div style="display:flex; flex-direction:column; gap:0.6rem;">
+            <a href="#" class="btn btn-secondary" style="justify-content:flex-start;" data-jump-tab="memory" data-jump-subtab="contiguous">
+              📏 <strong>Contiguous Allocation</strong> — First Fit, Best Fit, Worst Fit heuristics & Compaction
+            </a>
+            <a href="#" class="btn btn-secondary" style="justify-content:flex-start;" data-jump-tab="memory" data-jump-subtab="paging">
+              📑 <strong>Paging & MMU Translation</strong> — Logical to physical address mapping & Page Faults
+            </a>
+            <a href="#" class="btn btn-secondary" style="justify-content:flex-start;" data-jump-tab="memory" data-jump-subtab="segmentation">
+              🛡️ <strong>Segmentation & Protection</strong> — Base/Limit registers & Segmentation Fault trap
+            </a>
+            <a href="#" class="btn btn-secondary" style="justify-content:flex-start;" data-jump-tab="memory" data-jump-subtab="fragmentation">
+              🧩 <strong>Internal & External Fragmentation</strong> — Visual comparison and compaction demo
+            </a>
+            <a href="#" class="btn btn-secondary" style="justify-content:flex-start;" data-jump-tab="memory" data-jump-subtab="page-replacement">
+              🔄 <strong>Page Replacement</strong> — FIFO & LRU victim page eviction & hit ratio
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ======================================================== -->
+    <!-- TAB 2: PROCESS SYNCHRONIZATION DASHBOARD                 -->
+    <!-- ======================================================== -->
+    <section class="tab-content" id="tab-sync">
+      <!-- Sub Navigation for Synchronization Problems -->
+      <div class="subnav-pills">
+        <button class="subnav-btn active" data-subtab="producer-consumer">
+          📦 Producer-Consumer
+        </button>
+        <button class="subnav-btn" data-subtab="readers-writers">
+          📖 Readers-Writers
+        </button>
+        <button class="subnav-btn" data-subtab="dining-philosophers">
+          🍝 Dining Philosophers
+        </button>
+        <button class="subnav-btn" data-subtab="sleeping-barber">
+          💈 Sleeping Barber
+        </button>
+      </div>
+
+      <!-- 2.1 Producer-Consumer -->
+      <div class="subtab-content active" id="sync-producer-consumer">
+        <!-- Controls Toolbar -->
+        <div class="control-toolbar">
+          <div class="toolbar-group">
+            <button class="btn btn-primary" id="pc-btn-play">▶ Auto Play</button>
+            <button class="btn btn-secondary" id="pc-btn-step">⏭ Step</button>
+            <button class="btn btn-secondary" id="pc-btn-reset">↺ Reset</button>
+            <button class="btn btn-outline-teal" id="pc-btn-produce">+ Produce Item</button>
+            <button class="btn btn-outline-teal" id="pc-btn-consume">- Consume Item</button>
+          </div>
+          <div class="toolbar-group">
+            <div class="speed-control">
+              <span>Speed:</span>
+              <input type="range" id="pc-speed" min="0.5" max="3" step="0.5" value="1">
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulation Grid -->
+        <div class="sync-grid">
+          <!-- Left: Simulation Stage -->
+          <div class="sim-stage">
+            <div class="sim-stage-header">
+              <h3>Bounded-Buffer Stage</h3>
+              <div class="badge badge-teal" id="pc-cs-badge">
+                <span style="color:var(--color-success)">● UNLOCKED: Critical Section Free</span>
+              </div>
+            </div>
+
+            <!-- Semaphores Deck -->
+            <div class="semaphore-deck">
+              <div class="sem-card">
+                <span class="sem-name">mutex</span>
+                <span class="sem-value" id="sem-pc-mutex">1</span>
+                <span class="sem-desc">Binary (CS Lock)</span>
+              </div>
+              <div class="sem-card">
+                <span class="sem-name">empty</span>
+                <span class="sem-value" id="sem-pc-empty">6</span>
+                <span class="sem-desc">Free Slots Left</span>
+              </div>
+              <div class="sem-card">
+                <span class="sem-name">full</span>
+                <span class="sem-value" id="sem-pc-full">0</span>
+                <span class="sem-desc">Items in Buffer</span>
+              </div>
+            </div>
+
+            <!-- Arena -->
+            <div class="pc-arena">
+              <!-- Producer Node -->
+              <div class="actor-column">
+                <div class="actor-node" id="pc-producer-node">
+                  <strong>Producer</strong><br>
+                  <small>Idle / Ready</small>
+                </div>
+              </div>
+
+              <!-- Critical Section Protected Bounded Buffer -->
+              <div class="cs-zone free" id="pc-cs-zone" style="flex:1;">
+                <div class="cs-badge-pill">🔒 Critical Section Boundary</div>
+                <div class="buffer-tray" style="width:100%;">
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">
+                    Shared Circular Buffer (Capacity: 6)
+                  </span>
+                  <div class="buffer-slots-container" id="pc-buffer-slots">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Consumer Node -->
+              <div class="actor-column">
+                <div class="actor-node" id="pc-consumer-node">
+                  <strong>Consumer</strong><br>
+                  <small>Idle / Ready</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Educational Code & Logs -->
+          <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="card" style="padding:1rem;">
+              <div class="card-header" style="margin-bottom:0.5rem;">
+                <span style="font-size:0.85rem; font-weight:700;">Semaphore C Implementation</span>
+                <span class="badge badge-teal">Live Trace</span>
+              </div>
+              <div class="code-container" id="pc-code-container"></div>
+            </div>
+
+            <div class="card" style="padding:1rem;">
+              <div class="card-header" style="margin-bottom:0.5rem;">
+                <span style="font-size:0.85rem; font-weight:700;">Event Execution Log</span>
+              </div>
+              <div class="log-box" id="pc-log-box"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2.2 Readers-Writers -->
+      <div class="subtab-content" id="sync-readers-writers">
+        <div class="control-toolbar">
+          <div class="toolbar-group">
+            <button class="btn btn-primary" id="rw-btn-play">▶ Auto Play</button>
+            <button class="btn btn-secondary" id="rw-btn-step">⏭ Step</button>
+            <button class="btn btn-secondary" id="rw-btn-reset">↺ Reset</button>
+            <button class="btn btn-outline-teal" id="rw-btn-add-reader">+ Add Reader</button>
+            <button class="btn btn-danger btn-sm" id="rw-btn-add-writer">+ Add Writer</button>
+          </div>
+          <div class="toolbar-group">
+            <div class="speed-control">
+              <span>Speed:</span>
+              <input type="range" id="rw-speed" min="0.5" max="3" step="0.5" value="1">
+            </div>
+          </div>
+        </div>
+
+        <div class="sync-grid">
+          <div class="sim-stage">
+            <div class="sim-stage-header">
+              <h3>Reader-Preference Stage</h3>
+              <div class="badge badge-teal" id="rw-status-badge">
+                <span style="color:var(--color-success)">● IDLE (Database Unlocked)</span>
+              </div>
+            </div>
+
+            <div class="semaphore-deck">
+              <div class="sem-card">
+                <span class="sem-name">rw_mutex</span>
+                <span class="sem-value" id="sem-rw-mutex">1</span>
+                <span class="sem-desc">Writer / 1st Reader Lock</span>
+              </div>
+              <div class="sem-card">
+                <span class="sem-name">mutex</span>
+                <span class="sem-value" id="sem-rw-internal-mutex">1</span>
+                <span class="sem-desc">Protects read_count</span>
+              </div>
+              <div class="sem-card">
+                <span class="sem-name">read_count</span>
+                <span class="sem-value" id="sem-rw-readcount">0</span>
+                <span class="sem-desc">Active Readers</span>
+              </div>
+            </div>
+
+            <div class="rw-arena">
+              <!-- Waiting Queues -->
+              <div class="rw-queues-row">
+                <div class="rw-group">
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--color-info);">WAITING READERS QUEUE</span>
+                  <div class="rw-actor-chips" id="rw-waiting-readers"></div>
+                </div>
+                <div class="rw-group">
+                  <span style="font-size:0.75rem; font-weight:700; color:var(--color-danger);">WAITING WRITERS QUEUE</span>
+                  <div class="rw-actor-chips" id="rw-waiting-writers"></div>
+                </div>
+              </div>
+
+              <!-- Shared Database Inside Critical Section -->
+              <div class="shared-database cs-zone free" id="rw-database-zone">
+                <div class="cs-badge-pill">🔒 Shared Database (Critical Resource)</div>
+                <div style="font-size:2.5rem; margin-bottom:0.4rem;">🗄️</div>
+                <div style="display:flex; justify-content:space-around; width:100%; margin-top:0.75rem;">
+                  <div>
+                    <span style="font-size:0.75rem; color:var(--color-info); font-weight:700;">CONCURRENT READERS INSIDE:</span>
+                    <div class="rw-actor-chips" id="rw-active-readers" style="justify-content:center;"></div>
+                  </div>
+                  <div>
+                    <span style="font-size:0.75rem; color:var(--color-danger); font-weight:700;">EXCLUSIVE WRITER INSIDE:</span>
+                    <div class="rw-actor-chips" id="rw-active-writer" style="justify-content:center;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Code & Logs -->
+          <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="card" style="padding:1rem;">
+              <div class="card-header" style="margin-bottom:0.5rem;">
+                <span style="font-size:0.85rem; font-weight:700;">Readers-Writers Protocol</span>
+                <span class="badge badge-teal">Live Trace</span>
+              </div>
+              <div class="code-container" id="rw-code-container"></div>
+            </div>
+
+            <div class="card" style="padding:1rem;">
+              <div class="card-header" style="margin-bottom:0.5rem;">
+                <span style="font-size:0.85rem; font-weight:700;">Event Execution Log</span>
+              </div>
+              <div class="log-box" id="rw-log-box"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2.3 Dining Philosophers -->
+      <div class="subtab-content" id="sync-dining-philosophers">
+        <div class="control-toolbar">
+          <div class="toolbar-group">
+            <button class="btn btn-primary" id="dp-btn-play">▶ Auto Play</button>
+            <button class="btn btn-secondary" id="dp-btn-step">⏭ Step</button>
+            <button class="btn btn-secondary" id="dp-btn-reset">↺ Reset</button>
+            <button class="btn btn-danger btn-sm" id="dp-btn-deadlock">⚠️ Simulate Deadlock</button>
+          </div>
+          <div class="toolbar-group">
+            <div class="speed-control">
+              <span>Speed:</span>
+              <input type="range" id="dp-speed" min="0.5" max="3" step="0.5" value="1">
+            </div>
+          </div>
+        </div>
+
+        <div class="sync-grid">
+          <div class="sim-stage" style="align-items:center;">
+            <div class="sim-stage-header" style="width:100%;">
+              <h3>Circular Dining Table</h3>
+              <div class="badge badge-teal" id="dp-status-badge">
+                <span style="color:var(--teal-400)">● Running</span>
+              </div>
+            </div>
+
+            <!-- Chopsticks Semaphores row -->
+            <div class="semaphore-deck" style="width:100%;">
+              <div class="sem-card"><span class="sem-name">Chopstick 0</span><span class="sem-value" id="sem-dp-chop-0">1</span></div>
+              <div class="sem-card"><span class="sem-name">Chopstick 1</span><span class="sem-value" id="sem-dp-chop-1">1</span></div>
+              <div class="sem-card"><span class="sem-name">Chopstick 2</span><span class="sem-value" id="sem-dp-chop-2">1</span></div>
+              <div class="sem-card"><span class="sem-name">Chopstick 3</span><span class="sem-value" id="sem-dp-chop-3">1</span></div>
+              <div class="sem-card"><span class="sem-name">Chopstick 4</span><span class="sem-value" id="sem-dp-chop-4">1</span></div>
+            </div>
+
+            <!-- Table Arena with Circular Layout -->
+            <div class="philosophers-arena" id="dp-arena"></div>
+            <p style="font-size:0.75rem; color:var(--text-muted); text-align:center;">
+              💡 Tip: Click any philosopher directly to switch their state to HUNGRY!
+            </p>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="card" style="padding:1rem;">
+              <div class="card-header" style="margin-bottom:0.5rem;">
+                <span style="font-size:0.85rem; font-weight:700;">Asymmetric Algorithm (Deadlock Free)</span>
+              </div>
+              <div class="code-container" id="dp-code-container"></div>
+            </div>
+
+            <div class="card" style="padding:1rem;">
+              <div class="card-header" style="margin-bottom:0.5rem;">
+                <span style="font-size:0.85rem; font-weight:700;">Philosophers Log</span>
+              </div>
+              <div class="log-box" id="dp-log-box"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2.4 Sleeping Barber -->
+      <div class="subtab-content" id="sync-sleeping-barber">
+        <div class="control-toolbar">
+          <div class="toolbar-group">
+            <button class="btn btn-primary" id="sb-btn-play">▶ Auto Play</button>
+            <button class="btn btn-secondary" id="sb-btn-step">⏭ Step</button>
+            <button class="btn btn-secondary" id="sb-btn-reset">↺ Reset</button>
+            <button class="btn btn-outline-teal" id="sb-btn-add-customer">+ Customer Arrives</button>
+          </div>
+          <div class="toolbar-group">
+            <div class="speed-control">
+              <span>Speed:</span>
+              <input type="range" id="sb-speed" min="0.5" max="3" step="0.5" value="1">
+            </div>
+          </div>
+        </div>
+
+        <div class="sync-grid">
+          <div class="sim-stage">
+            <div class="sim-stage-header">
+              <h3>Barbershop Coordination Stage</h3>
+              <div class="badge badge-teal" id="sb-status-badge">
+                <span style="color:var(--color-purple)">● ASLEEP</span>
+              </div>
+            </div>
+
+            <div class="semaphore-deck">
+              <div class="sem-card">
+                <span class="sem-name">customers</span>
+                <span class="sem-value" id="sem-sb-customers">0</span>
+                <span class="sem-desc">Waiting in Chairs</span>
+              </div>
+              <div class="sem-card">
+                <span class="sem-name">barber</span>
+                <span class="sem-value" id="sem-sb-barber">0</span>
+                <span class="sem-desc">Barber Readiness</span>
+              </div>
+              <div class="sem-card">
+                <span class="sem-name">mutex</span>
+                <span class="sem-value" id="sem-sb-mutex">1</span>
+                <span class="sem-desc">Chairs Access Lock</span>
+              </div>
+            </div>
+
+            <div class="barber-shop">
+              <!-- Barber Cutting Room -->
+              <div class="barber-room">
+                <span style="font-size:0.8rem; font-weight:700; color:var(--teal-400);">CUTTING ROOM</span>
+                <div class="barber-chair-zone sleeping" id="sb-barber-chair-zone"></div>
+              </div>
+
+              <!-- Waiting Room Chairs -->
+              <div class="waiting-room">
+                <span style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">WAITING ROOM (Capacity: 4)</span>
+                <div class="waiting-chairs-grid" id="sb-waiting-chairs"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="card" style="padding:1rem;">
+              <div class="card-header" style="margin-bottom:0.5rem;">
+                <span style="font-size:0.85rem; font-weight:700;">Barber & Customer Synchronization</span>
+              </div>
+              <div class="code-container" id="sb-code-container"></div>
+            </div>
+
+            <div class="card" style="padding:1rem;">
+              <div class="card-header" style="margin-bottom:0.5rem;">
+                <span style="font-size:0.85rem; font-weight:700;">Barbershop Log</span>
+              </div>
+              <div class="log-box" id="sb-log-box"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ======================================================== -->
+    <!-- TAB 3: MEMORY MANAGEMENT DASHBOARD                       -->
+    <!-- ======================================================== -->
+    <section class="tab-content" id="tab-memory">
+      <!-- Sub Navigation for Memory Management Topics -->
+      <div class="subnav-pills">
+        <button class="subnav-btn active" data-subtab="contiguous">
+          📏 Contiguous Allocation (Fit Heuristics)
+        </button>
+        <button class="subnav-btn" data-subtab="paging">
+          📑 Paging & Address Translation
+        </button>
+        <button class="subnav-btn" data-subtab="segmentation">
+          🛡️ Segmentation & Protection
+        </button>
+        <button class="subnav-btn" data-subtab="fragmentation">
+          🧩 Fragmentation & Compaction
+        </button>
+        <button class="subnav-btn" data-subtab="page-replacement">
+          🔄 Page Replacement (FIFO & LRU)
+        </button>
+      </div>
+
+      <!-- 3.1 Contiguous Allocation -->
+      <div class="subtab-content active" id="mem-contiguous">
+        <!-- Control Toolbar -->
+        <div class="control-toolbar">
+          <div class="toolbar-group">
+            <div class="form-group" style="flex-direction:row; align-items:center;">
+              <label class="form-label">Strategy:</label>
+              <select class="form-select" id="contig-algo-select">
+                <option value="first" selected>First Fit</option>
+                <option value="best">Best Fit</option>
+                <option value="worst">Worst Fit</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex-direction:row; align-items:center;">
+              <label class="form-label">Size (KB):</label>
+              <input type="number" class="form-input" id="contig-proc-size" value="120" min="20" max="400" style="width:90px;">
+            </div>
+            <button class="btn btn-primary" id="contig-btn-allocate">+ Allocate</button>
+            <button class="btn btn-secondary" id="contig-btn-dealloc">- Free Oldest</button>
+            <button class="btn btn-outline-teal" id="contig-btn-compact">⚡ Run Compaction</button>
+            <button class="btn btn-secondary" id="contig-btn-workload">🎲 Random Workload</button>
+            <button class="btn btn-secondary" id="contig-btn-reset">↺ Reset</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Memory Bar -->
+        <div class="memory-bar-wrapper">
+          <div class="memory-bar-title">
+            <span>Physical RAM Representation (Total: 1000 KB)</span>
+            <span>Active Heuristic: <strong id="contig-active-algo-name" style="color:var(--teal-400)">First Fit</strong></span>
+          </div>
+          <div class="memory-ruler">
+            <span>0 KB</span>
+            <span>250 KB</span>
+            <span>500 KB</span>
+            <span>750 KB</span>
+            <span>1000 KB</span>
+          </div>
+          <div class="memory-bar" id="contig-mem-bar"></div>
+          <div style="display:flex; justify-content:space-between; margin-top:0.75rem; font-size:0.8rem;">
+            <span>Total Free Memory: <strong id="contig-total-free" style="color:var(--teal-400)">450 KB</strong></span>
+            <span>External Fragmentation Risk: <strong id="contig-ext-frag" style="color:var(--color-warning)">150 KB</strong></span>
+          </div>
+        </div>
+
+        <!-- Strategy Comparative Metrics -->
+        <div class="strategy-compare-grid">
+          <div class="strategy-card selected" id="card-first-fit">
+            <h4>First Fit <span class="badge badge-teal">Fastest</span></h4>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.4rem;">
+              Allocates the first hole that is big enough. Fast search time.
+            </p>
+            <div id="metric-first-fit"></div>
+          </div>
+          <div class="strategy-card" id="card-best-fit">
+            <h4>Best Fit <span class="badge badge-info">Tightest</span></h4>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.4rem;">
+              Allocates the smallest hole that is big enough. Produces tiny leftover fragments.
+            </p>
+            <div id="metric-best-fit"></div>
+          </div>
+          <div class="strategy-card" id="card-worst-fit">
+            <h4>Worst Fit <span class="badge badge-warning">Largest</span></h4>
+            <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.4rem;">
+              Allocates the largest available hole. Leaves large remainder holes.
+            </p>
+            <div id="metric-worst-fit"></div>
+          </div>
+        </div>
+
+        <!-- Blocks Table & Log -->
+        <div style="display:grid; grid-template-columns:1fr 380px; gap:1.5rem;">
+          <div class="card" style="padding:1rem;">
+            <div class="card-header" style="margin-bottom:0.5rem;">
+              <span style="font-size:0.85rem; font-weight:700;">Partition Allocation Table</span>
+            </div>
+            <table class="page-table">
+              <thead>
+                <tr>
+                  <th>Block ID</th>
+                  <th>Type</th>
+                  <th>Base Address</th>
+                  <th>Size</th>
+                  <th>End Address</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="contig-block-table"></tbody>
+            </table>
+          </div>
+
+          <div class="card" style="padding:1rem;">
+            <div class="card-header" style="margin-bottom:0.5rem;">
+              <span style="font-size:0.85rem; font-weight:700;">Memory Events Log</span>
+            </div>
+            <div class="log-box" id="contig-log-box"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3.2 Paging & Address Translation -->
+      <div class="subtab-content" id="mem-paging">
+        <div class="control-toolbar">
+          <div class="toolbar-group">
+            <div class="form-group" style="flex-direction:row; align-items:center;">
+              <label class="form-label">Logical Address:</label>
+              <input type="number" class="form-input" id="paging-input-addr" value="2500" min="0" max="8191" style="width:120px;">
+            </div>
+            <button class="btn btn-primary" id="paging-btn-translate">Translate Address</button>
+            <button class="btn btn-secondary btn-sm" id="paging-preset-1">Preset: 1500 (Page 1)</button>
+            <button class="btn btn-secondary btn-sm" id="paging-preset-2">Preset: 6500 (Page 6)</button>
+            <button class="btn btn-danger btn-sm" id="paging-preset-fault">Simulate Page Fault (4200)</button>
+          </div>
+        </div>
+
+        <div class="paging-stage">
+          <!-- Logical Address Space -->
+          <div class="paging-box">
+            <span style="font-size:0.8rem; font-weight:700; color:var(--teal-400);">LOGICAL PAGES (Process View)</span>
+            <div class="page-list" id="paging-logical-list"></div>
+          </div>
+
+          <!-- Translation Pipeline & Page Table -->
+          <div class="translation-center">
+            <div class="translation-formula-box">
+              <span style="font-size:0.8rem; font-weight:700; color:var(--text-secondary);">MMU Hardware Address Translation</span>
+              <div class="address-bits-display">
+                <div class="bit-chunk p-chunk">
+                  <div>Page (p)</div>
+                  <strong id="paging-calc-p">2</strong>
+                </div>
+                <div class="bit-chunk d-chunk">
+                  <div>Offset (d)</div>
+                  <strong id="paging-calc-d">452</strong>
+                </div>
+                <div style="display:flex; align-items:center; font-weight:bold; color:var(--text-muted);">➔</div>
+                <div class="bit-chunk p-chunk" style="background:rgba(16,185,129,0.15); border-color:var(--color-success); color:var(--color-success);">
+                  <div>Frame (f)</div>
+                  <strong id="paging-calc-f">1</strong>
+                </div>
+                <div class="bit-chunk" style="background:var(--bg-secondary); border-color:var(--border-color);">
+                  <div>Physical Address</div>
+                  <strong id="paging-calc-phys" style="color:var(--teal-400)">1476</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Page Table -->
+            <table class="page-table">
+              <thead>
+                <tr>
+                  <th>Page # (p)</th>
+                  <th>Frame # (f)</th>
+                  <th>Valid / Invalid Bit</th>
+                </tr>
+              </thead>
+              <tbody id="paging-table-body"></tbody>
+            </table>
+
+            <div id="paging-step-explanation" style="background:var(--bg-card); padding:0.85rem; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+              <div style="font-weight:700; color:var(--teal-400)">Address Translation Breakdown</div>
+              <p style="font-size:0.8rem; margin-top:0.3rem;">Enter a logical address above and click Translate to see the hardware MMU step-by-step breakdown.</p>
+            </div>
+          </div>
+
+          <!-- Physical Memory Frames -->
+          <div class="paging-box">
+            <span style="font-size:0.8rem; font-weight:700; color:var(--color-success);">PHYSICAL FRAMES (RAM)</span>
+            <div class="frame-list" id="paging-frames-list"></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:1rem;">
+          <div class="card-header" style="margin-bottom:0.5rem;">
+            <span style="font-size:0.85rem; font-weight:700;">Paging & Translation Event Log</span>
+          </div>
+          <div class="log-box" id="paging-log-box" style="height:120px;"></div>
+        </div>
+      </div>
+
+      <!-- 3.3 Segmentation -->
+      <div class="subtab-content" id="mem-segmentation">
+        <div class="control-toolbar">
+          <div class="toolbar-group">
+            <div class="form-group" style="flex-direction:row; align-items:center;">
+              <label class="form-label">Segment:</label>
+              <select class="form-select" id="seg-select-segment">
+                <option value="0">Segment 0: Code (.text)</option>
+                <option value="1">Segment 1: Data (.data)</option>
+                <option value="2">Segment 2: Stack</option>
+                <option value="3">Segment 3: Heap</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex-direction:row; align-items:center;">
+              <label class="form-label">Offset:</label>
+              <input type="number" class="form-input" id="seg-input-offset" value="250" min="0" max="3000" style="width:100px;">
+            </div>
+            <button class="btn btn-primary" id="seg-btn-validate">Check & Translate</button>
+            <button class="btn btn-secondary btn-sm" id="seg-preset-valid">Preset: Valid (Code + 350)</button>
+            <button class="btn btn-danger btn-sm" id="seg-preset-violation">Trigger Seg Fault (Data + 550)</button>
+          </div>
+        </div>
+
+        <div class="segment-flow-arena">
+          <!-- Segment Table -->
+          <div class="card" style="grid-column: span 2;">
+            <div class="card-header">
+              <h3 class="card-title">Segment Table (Base & Limit Registers)</h3>
+              <span class="badge badge-teal">Hardware MMU Table</span>
+            </div>
+            <table class="page-table">
+              <thead>
+                <tr>
+                  <th>Segment #</th>
+                  <th>Segment Name</th>
+                  <th>Base Register</th>
+                  <th>Limit Register</th>
+                  <th>Protection Privileges</th>
+                </tr>
+              </thead>
+              <tbody id="seg-table-body"></tbody>
+            </table>
+
+            <!-- Alerts -->
+            <div class="seg-fault-banner" id="seg-fault-banner"></div>
+            <div id="seg-success-banner" style="display:none; background:var(--color-success-bg); border:1px solid var(--color-success); color:var(--color-success); border-radius:var(--radius-md); padding:0.85rem; margin-top:1rem; font-weight:700; text-align:center;"></div>
+          </div>
+
+          <!-- Hardware Check Diagram -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Limit Check Logic</h3>
+            </div>
+            <div style="background:var(--bg-secondary); border-radius:var(--radius-md); padding:1rem; border:1px solid var(--border-color); text-align:center; font-family:var(--font-mono); font-size:0.85rem;">
+              <div style="color:var(--text-muted); margin-bottom:0.5rem;">Logical Address: &lt;s, d&gt;</div>
+              <div style="padding:0.5rem; background:var(--bg-card); border-radius:var(--radius-sm); border:1px solid var(--border-color);">
+                Is <code>offset (d) &lt; Limit</code> ?
+              </div>
+              <div style="display:flex; justify-content:space-around; margin-top:0.75rem; font-size:0.8rem;">
+                <span style="color:var(--color-success)">YES ➔ Base + d</span>
+                <span style="color:var(--color-danger)">NO ➔ TRAP (Seg Fault)</span>
+              </div>
+            </div>
+            <div id="seg-math-log" style="margin-top:1rem;"></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:1rem;">
+          <div class="card-header" style="margin-bottom:0.5rem;">
+            <span style="font-size:0.85rem; font-weight:700;">Segmentation Event Log</span>
+          </div>
+          <div class="log-box" id="seg-log-box" style="height:120px;"></div>
+        </div>
+      </div>
+
+      <!-- 3.4 Fragmentation & Compaction -->
+      <div class="subtab-content" id="mem-fragmentation">
+        <div class="frag-demo-box">
+          <!-- Internal Fragmentation Card -->
+          <div class="frag-block-diagram">
+            <div class="card-header">
+              <h3 class="card-title" style="color:var(--color-warning);">Internal Fragmentation</h3>
+              <span class="badge badge-warning">Fixed Partitioning / Paging</span>
+            </div>
+            <p style="font-size:0.825rem; color:var(--text-secondary); margin-bottom:1rem;">
+              Occurs when memory is allocated in fixed-size blocks (e.g., fixed partitions or page frames). The process does not use the entire partition, wasting space <em>inside</em> the allocated block.
+            </p>
+            <div class="form-group" style="flex-direction:row; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+              <label class="form-label">Needed Size (Max 100 KB):</label>
+              <input type="number" class="form-input" id="frag-internal-size" value="74" min="10" max="100" style="width:90px;">
+              <button class="btn btn-secondary btn-sm" id="frag-btn-calc-internal">Calculate</button>
+            </div>
+            <div style="font-size:0.85rem; margin-bottom:0.6rem;">
+              Fixed Partition Size: <strong>100 KB</strong> | Internal Waste: <strong id="frag-internal-waste" style="color:var(--color-danger)">26 KB wasted</strong>
+            </div>
+            <div id="frag-internal-box"></div>
+          </div>
+
+          <!-- External Fragmentation Card -->
+          <div class="frag-block-diagram">
+            <div class="card-header">
+              <h3 class="card-title" style="color:var(--color-danger);">External Fragmentation</h3>
+              <span class="badge badge-danger">Variable Partitioning</span>
+            </div>
+            <p style="font-size:0.825rem; color:var(--text-secondary); margin-bottom:1rem;">
+              Occurs when total free memory space exists to satisfy a request, but it is broken into non-contiguous holes scattered across RAM.
+            </p>
+            <div class="form-group" style="flex-direction:row; align-items:center; gap:0.5rem; margin-bottom:1rem;">
+              <label class="form-label">Request Size (KB):</label>
+              <input type="number" class="form-input" id="frag-ext-req-size" value="90" min="20" max="120" style="width:90px;">
+              <button class="btn btn-secondary btn-sm" id="frag-btn-test-ext">Test Allocation</button>
+              <button class="btn btn-outline-teal btn-sm" id="frag-btn-compact-demo">Run Compaction</button>
+            </div>
+            <div id="frag-ext-holes" style="margin-bottom:0.75rem;">
+              <div style="display:flex; height:60px; width:100%; border:2px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden;">
+                <div style="width:32%; background:repeating-linear-gradient(45deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05) 5px, rgba(255,255,255,0.08) 5px, rgba(255,255,255,0.08) 10px); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--text-muted); border-right:1px solid var(--border-color);">
+                  Hole 1: 35 KB
+                </div>
+                <div style="width:20%; background:var(--bg-input); display:flex; align-items:center; justify-content:center; font-size:11px; border-right:1px solid var(--border-color);">
+                  Process A
+                </div>
+                <div style="width:40%; background:repeating-linear-gradient(45deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05) 5px, rgba(255,255,255,0.08) 5px, rgba(255,255,255,0.08) 10px); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--text-muted); border-right:1px solid var(--border-color);">
+                  Hole 2: 45 KB
+                </div>
+                <div style="width:28%; background:repeating-linear-gradient(45deg, rgba(255,255,255,0.05), rgba(255,255,255,0.05) 5px, rgba(255,255,255,0.08) 5px, rgba(255,255,255,0.08) 10px); display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--text-muted);">
+                  Hole 3: 30 KB
+                </div>
+              </div>
+            </div>
+            <div id="frag-ext-result" style="font-size:0.85rem; padding:0.6rem; background:var(--bg-card); border-radius:var(--radius-md); border:1px solid var(--border-color);"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3.5 Page Replacement (FIFO and LRU) -->
+      <div class="subtab-content" id="mem-page-replacement">
+        <div class="control-toolbar">
+          <div class="toolbar-group">
+            <div class="form-group" style="flex-direction:row; align-items:center;">
+              <label class="form-label">Algorithm:</label>
+              <select class="form-select" id="pr-select-algo">
+                <option value="fifo" selected>FIFO (First In, First Out)</option>
+                <option value="lru">LRU (Least Recently Used)</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex-direction:row; align-items:center;">
+              <label class="form-label">Frames:</label>
+              <select class="form-select" id="pr-select-frames">
+                <option value="3" selected>3 Frames</option>
+                <option value="4">4 Frames</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex-direction:row; align-items:center;">
+              <label class="form-label">Reference String:</label>
+              <input type="text" class="form-input" id="pr-input-ref" value="7, 0, 1, 2, 0, 3, 0, 4, 2, 3, 0, 3, 2, 1, 2, 0, 1, 7, 0, 1" style="width:260px;">
+            </div>
+            <button class="btn btn-primary" id="pr-btn-step">⏭ Step</button>
+            <button class="btn btn-secondary" id="pr-btn-run-all">▶ Run All</button>
+            <button class="btn btn-secondary" id="pr-btn-reset">↺ Reset</button>
+          </div>
+        </div>
+
+        <!-- Reference Stream & Frame Stage -->
+        <div class="card" style="margin-bottom:1.5rem;">
+          <div class="card-header">
+            <h3 class="card-title">Page Reference String Stream</h3>
+            <span class="badge badge-teal">Execution Sequence</span>
+          </div>
+          <div id="pr-ref-display" style="display:flex; flex-wrap:wrap; gap:0.4rem; padding:0.75rem; background:var(--bg-secondary); border-radius:var(--radius-md); border:1px solid var(--border-color); margin-bottom:1.25rem;"></div>
+
+          <div style="display:grid; grid-template-columns:1fr 280px; gap:1.5rem;">
+            <!-- Current Frames View -->
+            <div>
+              <span style="font-size:0.8rem; font-weight:700; color:var(--text-secondary); display:block; margin-bottom:0.5rem;">CURRENT PHYSICAL FRAMES IN RAM:</span>
+              <div id="pr-current-frames" style="display:flex; gap:0.75rem;"></div>
+            </div>
+
+            <!-- Hit/Fault Metrics Card -->
+            <div style="background:var(--bg-secondary); border-radius:var(--radius-md); padding:1rem; border:1px solid var(--border-color); display:flex; flex-direction:column; justify-content:center; gap:0.5rem;">
+              <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                <span>Page Faults:</span> <strong id="pr-fault-count" style="color:var(--color-danger)">0</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                <span>Page Hits:</span> <strong id="pr-hit-count" style="color:var(--color-success)">0</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                <span>Hit Ratio:</span> <strong id="pr-hit-ratio" style="color:var(--teal-400)">0%</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- History Table & Logs -->
+        <div style="display:grid; grid-template-columns:1fr 380px; gap:1.5rem;">
+          <div class="card" style="padding:1rem;">
+            <div class="card-header" style="margin-bottom:0.5rem;">
+              <span style="font-size:0.85rem; font-weight:700;">Step-by-Step Allocation History Matrix</span>
+            </div>
+            <div style="max-height:260px; overflow-y:auto;">
+              <table class="page-table">
+                <thead>
+                  <tr>
+                    <th>Step</th>
+                    <th>Ref Page</th>
+                    <th>F0</th>
+                    <th>F1</th>
+                    <th>F2</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="pr-history-body"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="padding:1rem;">
+            <div class="card-header" style="margin-bottom:0.5rem;">
+              <span style="font-size:0.85rem; font-weight:700;">Page Replacement Event Log</span>
+            </div>
+            <div class="log-box" id="pr-log-box" style="height:220px;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- App Footer -->
+  <footer class="app-footer">
+    <p>
+      <strong>Process Synchronization & Memory Management Visualizer</strong> • OS Project-Based Learning Suite<br>
+      Built with Node.js, Express, and Vanilla JavaScript • Theme: Deep Navy & Teal
+    </p>
+  </footer>
+
+  <!-- JavaScript Modules -->
+  <script src="js/data/pseudocode.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/sync/producer-consumer.js"></script>
+  <script src="js/sync/readers-writers.js"></script>
+  <script src="js/sync/dining-philosophers.js"></script>
+  <script src="js/sync/sleeping-barber.js"></script>
+  <script src="js/memory/contiguous.js"></script>
+  <script src="js/memory/paging.js"></script>
+  <script src="js/memory/segmentation.js"></script>
+  <script src="js/memory/fragmentation.js"></script>
+  <script src="js/memory/page-replacement.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
+
