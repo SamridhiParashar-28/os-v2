@@ -83,8 +83,8 @@ If you prefer using the command line:
 
 ```bash
 # 1. Clone the repository
-git clone <your-repository-url>
-cd "os V2"
+git clone https://github.com/SamridhiParashar-28/os-v2.git
+cd os-v2
 
 # 2. Install dependencies
 npm install
@@ -133,7 +133,7 @@ Verify that `git status` does **not** track `.env` or `task-tracker.json`.
 ## 📁 Project Directory Structure
 
 ```text
-os V2/
+os-v2/
 ├── .env                         # Server environment configuration (Git-ignored)
 ├── .env.example                 # Public environment template
 ├── .gitignore                   # Excludes node_modules, .env, task-tracker.json, logs
