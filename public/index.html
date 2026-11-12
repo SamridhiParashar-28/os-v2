@@ -156,7 +156,9 @@
         </button>
       </div>
 
-      <!-- 2.1 Producer-Consumer -->
+      <!-- ======================================================== -->
+      <!-- 2.1 PRODUCER-CONSUMER (BOUNDED BUFFER)                   -->
+      <!-- ======================================================== -->
       <div class="subtab-content active" id="sync-producer-consumer">
         <!-- Controls Toolbar -->
         <div class="control-toolbar">
@@ -175,12 +177,41 @@
           </div>
         </div>
 
+        <!-- Live Action Narrative Explainer Box -->
+        <div class="sync-narrative-box" id="pc-narrative-box">
+          <div class="narrative-icon" id="pc-narrative-icon">📦</div>
+          <div class="narrative-body">
+            <div class="narrative-title" id="pc-narrative-title">Bounded Buffer: Ready for Execution</div>
+            <div class="narrative-text" id="pc-narrative-text">
+              Initial State: Buffer is empty (empty = 6, full = 0). Mutex = 1 (Critical Section unlocked). The Producer is ready to generate items; Consumers must wait until at least one item is produced.
+            </div>
+          </div>
+        </div>
+
+        <!-- Lifecycle Step Progression Pipeline -->
+        <div class="sync-pipeline" id="pc-pipeline">
+          <div class="pipeline-step active" id="pc-pipe-1"><span>1. Produce Item</span></div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step" id="pc-pipe-2"><span>2. wait(empty)</span></div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step" id="pc-pipe-3"><span>3. wait(mutex)</span></div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step" id="pc-pipe-4"><span>4. In CS: buffer[in]</span></div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step" id="pc-pipe-5"><span>5. signal(mutex)</span></div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step" id="pc-pipe-6"><span>6. signal(full)</span></div>
+        </div>
+
         <!-- Simulation Grid -->
         <div class="sync-grid">
           <!-- Left: Simulation Stage -->
           <div class="sim-stage">
             <div class="sim-stage-header">
-              <h3>Bounded-Buffer Stage</h3>
+              <div>
+                <h3 style="margin:0;">Bounded-Buffer Visual Arena</h3>
+                <small style="color:var(--text-secondary);">Circular array with IN/OUT index pointers & semaphores</small>
+              </div>
               <div class="badge badge-teal" id="pc-cs-badge">
                 <span style="color:var(--color-success)">● UNLOCKED: Critical Section Free</span>
               </div>
@@ -219,11 +250,20 @@
               <div class="cs-zone free" id="pc-cs-zone" style="flex:1;">
                 <div class="cs-badge-pill">🔒 Critical Section Boundary</div>
                 <div class="buffer-tray" style="width:100%;">
-                  <span style="font-size:0.75rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">
-                    Shared Circular Buffer (Capacity: 6)
-                  </span>
+                  <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                    <span style="font-size:0.75rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase;">
+                      Shared Circular Buffer (Capacity: 6)
+                    </span>
+                    <span class="invariant-pill" id="pc-invariant-badge">
+                      ✓ empty (6) + full (0) = 6
+                    </span>
+                  </div>
                   <div class="buffer-slots-container" id="pc-buffer-slots">
                     <!-- Populated dynamically -->
+                  </div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); display:flex; gap:1.5rem; justify-content:center;">
+                    <span><strong style="color:var(--teal-400);">IN</strong> = Next write position</span>
+                    <span><strong style="color:var(--color-warning);">OUT</strong> = Next read position</span>
                   </div>
                 </div>
               </div>
@@ -256,10 +296,59 @@
             </div>
           </div>
         </div>
+
+        <!-- Descriptive Educational Concept Card -->
+        <div class="sync-concept-card">
+          <div class="concept-card-header">
+            <div class="concept-card-title">
+              <span>📚 Bounded-Buffer & Semaphore Mechanics Guide</span>
+            </div>
+            <span class="badge badge-teal">Theoretical Architecture</span>
+          </div>
+          <div class="concept-grid">
+            <div class="concept-block">
+              <div class="concept-block-title">💡 The Core Problem</div>
+              <p>Two asynchronous processes share a fixed-size memory pool (buffer):</p>
+              <ul>
+                <li><strong>Producer</strong> generates data items and stores them into buffer.</li>
+                <li><strong>Consumer</strong> extracts and processes items from buffer.</li>
+                <li><strong>Constraint</strong>: Producer must sleep if buffer is FULL; Consumer must sleep if buffer is EMPTY.</li>
+              </ul>
+            </div>
+            <div class="concept-block">
+              <div class="concept-block-title">🔑 Semaphores Explained</div>
+              <ul>
+                <li><code>mutex = 1</code>: Binary lock protecting <code>in</code>/<code>out</code> index pointers against concurrent data corruption.</li>
+                <li><code>empty = N</code>: Counting semaphore tracking available vacant slots.</li>
+                <li><code>full = 0</code>: Counting semaphore tracking ready data items.</li>
+              </ul>
+            </div>
+            <div class="concept-block">
+              <div class="concept-block-title">📐 Key Mathematical Invariants</div>
+              <p>At every point in time during correct synchronization:</p>
+              <ul>
+                <li><code>empty + full = BUFFER_SIZE (6)</code></li>
+                <li><code>0 ≤ full ≤ 6</code> &amp; <code>0 ≤ empty ≤ 6</code></li>
+                <li><code>in = (in + 1) % 6</code> (Wraps around circularly)</li>
+                <li><code>out = (out + 1) % 6</code> (Avoids buffer shifting)</li>
+              </ul>
+            </div>
+            <div class="concept-block">
+              <div class="concept-block-title">🛡️ Race Conditions Avoided</div>
+              <ul>
+                <li><strong>Lost Updates</strong>: Two producers writing to slot <code>in</code> simultaneously is impossible because <code>wait(mutex)</code> serializes buffer access.</li>
+                <li><strong>Buffer Underflow</strong>: Consumers cannot read from an empty slot because <code>wait(full)</code> blocks until <code>full &gt; 0</code>.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- 2.2 Readers-Writers -->
+      <!-- ======================================================== -->
+      <!-- 2.2 READERS-WRITERS (READER PREFERENCE)                  -->
+      <!-- ======================================================== -->
       <div class="subtab-content" id="sync-readers-writers">
+        <!-- Controls Toolbar -->
         <div class="control-toolbar">
           <div class="toolbar-group">
             <button class="btn btn-primary" id="rw-btn-play">▶ Auto Play</button>
@@ -276,10 +365,38 @@
           </div>
         </div>
 
+        <!-- Live Action Narrative Explainer Box -->
+        <div class="sync-narrative-box" id="rw-narrative-box">
+          <div class="narrative-icon" id="rw-narrative-icon">📖</div>
+          <div class="narrative-body">
+            <div class="narrative-title" id="rw-narrative-title">Database Concurrency Status: Idle &amp; Unlocked</div>
+            <div class="narrative-text" id="rw-narrative-text">
+              The shared database is currently idle. Readers may enter concurrently without mutual exclusion among themselves. Any writer wishing to enter requires strictly exclusive access.
+            </div>
+          </div>
+        </div>
+
+        <!-- Concurrency Status Banner -->
+        <div class="sync-pipeline" id="rw-pipeline">
+          <div class="pipeline-step active" id="rw-pipe-1"><span>Reader Path: wait(mutex)</span></div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step" id="rw-pipe-2"><span>read_count++</span></div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step" id="rw-pipe-3"><span>1st Reader: wait(rw_mutex)</span></div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step" id="rw-pipe-4"><span>Concurrent DB Reading</span></div>
+          <span class="pipeline-arrow">→</span>
+          <div class="pipeline-step" id="rw-pipe-5"><span>Last Reader: signal(rw_mutex)</span></div>
+        </div>
+
+        <!-- Simulation Grid -->
         <div class="sync-grid">
           <div class="sim-stage">
             <div class="sim-stage-header">
-              <h3>Reader-Preference Stage</h3>
+              <div>
+                <h3 style="margin:0;">Reader-Preference Stage</h3>
+                <small style="color:var(--text-secondary);">Multiple concurrent readers vs Single exclusive writer</small>
+              </div>
               <div class="badge badge-teal" id="rw-status-badge">
                 <span style="color:var(--color-success)">● IDLE (Database Unlocked)</span>
               </div>
@@ -352,9 +469,72 @@
             </div>
           </div>
         </div>
+
+        <!-- Descriptive Educational Concept Card -->
+        <div class="sync-concept-card">
+          <div class="concept-card-header">
+            <div class="concept-card-title">
+              <span>📚 Concurrency Rules & Reader-Preference Analysis</span>
+            </div>
+            <span class="badge badge-teal">Protocol Specification</span>
+          </div>
+          <div class="concept-grid">
+            <div class="concept-block">
+              <div class="concept-block-title">⚖️ Concurrency Rules Matrix</div>
+              <table class="rw-matrix-table">
+                <thead>
+                  <tr>
+                    <th>Process Inside</th>
+                    <th>Next Reader Arrives</th>
+                    <th>Next Writer Arrives</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Reader(s)</strong></td>
+                    <td><span class="badge-allow">✓ Allowed</span></td>
+                    <td><span class="badge-block">✕ Blocked</span></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Writer</strong></td>
+                    <td><span class="badge-block">✕ Blocked</span></td>
+                    <td><span class="badge-block">✕ Blocked</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="concept-block">
+              <div class="concept-block-title">💡 First &amp; Last Reader Pattern</div>
+              <ul>
+                <li><strong>First Reader</strong> (<code>read_count == 1</code>): Must execute <code>wait(rw_mutex)</code> to lock the database, blocking all incoming writers.</li>
+                <li><strong>Middle Readers</strong> (<code>read_count &gt; 1</code>): Enter immediately without touching <code>rw_mutex</code>.</li>
+                <li><strong>Last Reader</strong> (<code>read_count == 0</code>): Executes <code>signal(rw_mutex)</code>, freeing database for waiting writers.</li>
+              </ul>
+            </div>
+            <div class="concept-block">
+              <div class="concept-block-title">⚠️ Writer Starvation Hazard</div>
+              <p>Under First Readers-Writers (Reader Preference):</p>
+              <ul>
+                <li>If new readers keep arriving while previous readers are still reading, <code>read_count</code> never drops to 0.</li>
+                <li>A waiting writer can remain <strong>starved indefinitely</strong>!</li>
+                <li><strong>Solution</strong>: Fair / Writer-Preference protocols introduce an additional turnstile semaphore.</li>
+              </ul>
+            </div>
+            <div class="concept-block">
+              <div class="concept-block-title">🛡️ Role of the <code>mutex</code> Semaphore</div>
+              <p>Why do we need <code>mutex</code> if we already have <code>rw_mutex</code>?</p>
+              <ul>
+                <li><code>mutex</code> provides mutual exclusion exclusively for modifying the shared variable <code>read_count</code>.</li>
+                <li>Without it, two readers executing <code>read_count++</code> concurrently could cause lost increments (a classic race condition).</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- 2.3 Dining Philosophers -->
+      <!-- ======================================================== -->
+      <!-- 2.3 DINING PHILOSOPHERS                                  -->
+      <!-- ======================================================== -->
       <div class="subtab-content" id="sync-dining-philosophers">
         <div class="control-toolbar">
           <div class="toolbar-group">
@@ -371,10 +551,44 @@
           </div>
         </div>
 
+        <!-- Live Action Narrative Explainer Box -->
+        <div class="sync-narrative-box" id="dp-narrative-box">
+          <div class="narrative-icon" id="dp-narrative-icon">🍝</div>
+          <div class="narrative-body">
+            <div class="narrative-title" id="dp-narrative-title">Philosophers State: Active Thinking</div>
+            <div class="narrative-text" id="dp-narrative-text">
+              All 5 philosophers are currently thinking. Each philosopher requires both their left and right chopsticks to eat. An asymmetric pickup protocol is active to eliminate circular wait and prevent deadlock.
+            </div>
+          </div>
+        </div>
+
+        <!-- Chopsticks Real-time Ownership Indicators -->
+        <div class="chopstick-ownership-row" id="dp-chopsticks-row">
+          <div class="chopstick-owner-tag" id="dp-chop-tag-0">🥢 C0: <span>Free</span></div>
+          <div class="chopstick-owner-tag" id="dp-chop-tag-1">🥢 C1: <span>Free</span></div>
+          <div class="chopstick-owner-tag" id="dp-chop-tag-2">🥢 C2: <span>Free</span></div>
+          <div class="chopstick-owner-tag" id="dp-chop-tag-3">🥢 C3: <span>Free</span></div>
+          <div class="chopstick-owner-tag" id="dp-chop-tag-4">🥢 C4: <span>Free</span></div>
+        </div>
+
+        <!-- Deadlock Alert Banner (Hidden by default, shown when deadlocked) -->
+        <div class="deadlock-alert-banner" id="dp-deadlock-banner" style="display:none;">
+          <h4 style="color:var(--color-danger); margin-bottom:0.35rem;">⚠️ DEADLOCK DETECTED! Circular Wait Condition Formed</h4>
+          <p style="font-size:0.85rem; margin-bottom:0.5rem;">
+            Every philosopher has picked up their left chopstick and is waiting indefinitely for their right chopstick held by their neighbor.
+          </p>
+          <div style="font-family:var(--font-mono); font-size:0.8rem; color:var(--color-warning);">
+            P0 holding C0, waiting C1 → P1 holding C1, waiting C2 → P2 holding C2, waiting C3 → P3 holding C3, waiting C4 → P4 holding C4, waiting C0 → P0 (Loop!)
+          </div>
+        </div>
+
         <div class="sync-grid">
           <div class="sim-stage" style="align-items:center;">
             <div class="sim-stage-header" style="width:100%;">
-              <h3>Circular Dining Table</h3>
+              <div>
+                <h3 style="margin:0;">Circular Dining Table</h3>
+                <small style="color:var(--text-secondary);">5 Philosophers (P0-P4) &amp; 5 Chopsticks (C0-C4)</small>
+              </div>
               <div class="badge badge-teal" id="dp-status-badge">
                 <span style="color:var(--teal-400)">● Running</span>
               </div>
@@ -412,9 +626,56 @@
             </div>
           </div>
         </div>
+
+        <!-- Descriptive Educational Concept Card -->
+        <div class="sync-concept-card">
+          <div class="concept-card-header">
+            <div class="concept-card-title">
+              <span>📚 Coffman's 4 Conditions &amp; Deadlock Resolution</span>
+            </div>
+            <span class="badge badge-teal">Dijkstra's Classic Model</span>
+          </div>
+          <div class="concept-grid">
+            <div class="concept-block">
+              <div class="concept-block-title">🔒 Coffman's 4 Deadlock Conditions</div>
+              <ul>
+                <li><strong>1. Mutual Exclusion</strong>: A chopstick can only be held by 1 philosopher at a time.</li>
+                <li><strong>2. Hold and Wait</strong>: A philosopher holds left chopstick while waiting for right chopstick.</li>
+                <li><strong>3. No Preemption</strong>: Chopsticks cannot be forcibly seized from a philosopher.</li>
+                <li><strong>4. Circular Wait</strong>: Each philosopher waits for a resource held by the next in the ring.</li>
+              </ul>
+            </div>
+            <div class="concept-block">
+              <div class="concept-block-title">🛡️ Breaking Circular Wait (Asymmetric Solution)</div>
+              <p>Dijkstra proposed an asymmetric pickup order:</p>
+              <ul>
+                <li><strong>Even Philosophers (0, 2, 4)</strong>: Pick up LEFT fork first, then RIGHT fork.</li>
+                <li><strong>Odd Philosophers (1, 3)</strong>: Pick up RIGHT fork first, then LEFT fork.</li>
+                <li>This breaks the circular chain, guaranteeing at least one philosopher can acquire both forks!</li>
+              </ul>
+            </div>
+            <div class="concept-block">
+              <div class="concept-block-title">⚡ Maximum Concurrency Limit</div>
+              <p>How many philosophers can eat simultaneously?</p>
+              <ul>
+                <li>Each eating philosopher requires 2 adjacent chopsticks.</li>
+                <li>In a system of 5 philosophers, at most <code>⌊5 / 2⌋ = 2</code> non-adjacent philosophers can eat at once (e.g., P0 &amp; P2, or P1 &amp; P3).</li>
+              </ul>
+            </div>
+            <div class="concept-block">
+              <div class="concept-block-title">⚠️ Starvation vs Deadlock</div>
+              <ul>
+                <li><strong>Deadlock</strong>: Complete freeze where all 5 philosophers wait forever in a cycle.</li>
+                <li><strong>Starvation</strong>: A philosopher might starve if their two neighbors conspire to alternate eating endlessly, though deadlock has not occurred.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- 2.4 Sleeping Barber -->
+      <!-- ======================================================== -->
+      <!-- 2.4 SLEEPING BARBER                                      -->
+      <!-- ======================================================== -->
       <div class="subtab-content" id="sync-sleeping-barber">
         <div class="control-toolbar">
           <div class="toolbar-group">
@@ -431,10 +692,44 @@
           </div>
         </div>
 
+        <!-- Live Action Narrative Explainer Box -->
+        <div class="sync-narrative-box" id="sb-narrative-box">
+          <div class="narrative-icon" id="sb-narrative-icon">💈</div>
+          <div class="narrative-body">
+            <div class="narrative-title" id="sb-narrative-title">Barbershop Status: Barber Sleeping (No Customers)</div>
+            <div class="narrative-text" id="sb-narrative-text">
+              The shop is empty. The barber is sleeping in the chair (customers = 0, barber = 0). When a customer arrives, they will wake the barber; if the barber is cutting hair, arriving customers will take a waiting chair or leave if all 4 chairs are full.
+            </div>
+          </div>
+        </div>
+
+        <!-- Real-time Statistics Deck -->
+        <div class="barber-stats-row" id="sb-stats-row">
+          <div class="barber-stat-card">
+            <div class="barber-stat-num" id="sb-stat-arrived">0</div>
+            <div class="barber-stat-label">Total Arrived</div>
+          </div>
+          <div class="barber-stat-card">
+            <div class="barber-stat-num" id="sb-stat-served">0</div>
+            <div class="barber-stat-label">Customers Served ✂️</div>
+          </div>
+          <div class="barber-stat-card">
+            <div class="barber-stat-num" id="sb-stat-waiting">0 / 4</div>
+            <div class="barber-stat-label">In Waiting Chairs 🪑</div>
+          </div>
+          <div class="barber-stat-card">
+            <div class="barber-stat-num danger" id="sb-stat-balked">0</div>
+            <div class="barber-stat-label">Balked (Turned Away) 🚪</div>
+          </div>
+        </div>
+
         <div class="sync-grid">
           <div class="sim-stage">
             <div class="sim-stage-header">
-              <h3>Barbershop Coordination Stage</h3>
+              <div>
+                <h3 style="margin:0;">Barbershop Coordination Stage</h3>
+                <small style="color:var(--text-secondary);">Rendezvous synchronization &amp; capacity-limited queueing</small>
+              </div>
               <div class="badge badge-teal" id="sb-status-badge">
                 <span style="color:var(--color-purple)">● ASLEEP</span>
               </div>
@@ -476,7 +771,7 @@
           <div style="display:flex; flex-direction:column; gap:1.25rem;">
             <div class="card" style="padding:1rem;">
               <div class="card-header" style="margin-bottom:0.5rem;">
-                <span style="font-size:0.85rem; font-weight:700;">Barber & Customer Synchronization</span>
+                <span style="font-size:0.85rem; font-weight:700;">Barber &amp; Customer Synchronization</span>
               </div>
               <div class="code-container" id="sb-code-container"></div>
             </div>
@@ -489,9 +784,55 @@
             </div>
           </div>
         </div>
+
+        <!-- Descriptive Educational Concept Card -->
+        <div class="sync-concept-card">
+          <div class="concept-card-header">
+            <div class="concept-card-title">
+              <span>📚 Sleeping Barber Queueing &amp; Rendezvous Dynamics</span>
+            </div>
+            <span class="badge badge-teal">Client-Server Pattern</span>
+          </div>
+          <div class="concept-grid">
+            <div class="concept-block">
+              <div class="concept-block-title">💡 The Problem Analogy</div>
+              <p>A classic client-server queueing synchronization problem:</p>
+              <ul>
+                <li>Barber sits in cutting chair; sleeps if no customers.</li>
+                <li>Customer arrives: wakes the barber if asleep.</li>
+                <li>If barber is busy and chairs available: sits and waits.</li>
+                <li>If barber busy and all chairs filled: customer <strong>balks (leaves)</strong>.</li>
+              </ul>
+            </div>
+            <div class="concept-block">
+              <div class="concept-block-title">🔑 Semaphores &amp; Mutex Breakdown</div>
+              <ul>
+                <li><code>customers</code>: Counting semaphore initialized to 0. Number of customers waiting.</li>
+                <li><code>barber</code>: Binary semaphore initialized to 0. Barber signals customer when ready to cut.</li>
+                <li><code>mutex</code>: Binary lock protecting read/write access to shared integer <code>waiting</code>.</li>
+              </ul>
+            </div>
+            <div class="concept-block">
+              <div class="concept-block-title">🤝 The Rendezvous Concept</div>
+              <p>Notice the two-way handshake:</p>
+              <ul>
+                <li>Customer executes <code>signal(customers)</code> then <code>wait(barber)</code>.</li>
+                <li>Barber executes <code>wait(customers)</code> then <code>signal(barber)</code>.</li>
+                <li>Neither customer nor barber can proceed with the haircut without the other being ready!</li>
+              </ul>
+            </div>
+            <div class="concept-block">
+              <div class="concept-block-title">🚪 Handling Capacity Balking</div>
+              <p>Real-world queue limits in Operating Systems:</p>
+              <ul>
+                <li>Similar to packet drop in full router buffers or socket rejection on maximum pending connections (<code>listen(backlog)</code>).</li>
+                <li>Prevents infinite memory accumulation during sudden workload spikes.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
-
 
     <!-- ======================================================== -->
     <!-- TAB 3: MEMORY MANAGEMENT DASHBOARD                       -->

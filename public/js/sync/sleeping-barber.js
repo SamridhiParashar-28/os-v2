@@ -14,6 +14,11 @@ class SleepingBarberSim {
     this.activeCustomer = null;
     this.customerIdCounter = 1;
 
+    // Statistics
+    this.totalArrived = 0;
+    this.totalServed = 0;
+    this.totalBalked = 0;
+
     this.isPlaying = false;
     this.speedMultiplier = 1;
     this.timer = null;
@@ -35,7 +40,17 @@ class SleepingBarberSim {
       btnStep: document.getElementById('sb-btn-step'),
       btnReset: document.getElementById('sb-btn-reset'),
       btnAddCustomer: document.getElementById('sb-btn-add-customer'),
-      speedSlider: document.getElementById('sb-speed')
+      speedSlider: document.getElementById('sb-speed'),
+
+      // Enhanced Visual Elements
+      narrativeBox: document.getElementById('sb-narrative-box'),
+      narrativeTitle: document.getElementById('sb-narrative-title'),
+      narrativeText: document.getElementById('sb-narrative-text'),
+      narrativeIcon: document.getElementById('sb-narrative-icon'),
+      statArrived: document.getElementById('sb-stat-arrived'),
+      statServed: document.getElementById('sb-stat-served'),
+      statWaiting: document.getElementById('sb-stat-waiting'),
+      statBalked: document.getElementById('sb-stat-balked')
     };
 
     this.renderCode();
@@ -43,6 +58,15 @@ class SleepingBarberSim {
     this.updateUI();
     this.bindEvents();
     this.log('Sleeping Barber simulation initialized. 4 Waiting Chairs. Barber is currently sleeping.');
+  }
+
+  setNarrative(icon, title, text, stateClass = '') {
+    if (this.dom.narrativeIcon) this.dom.narrativeIcon.textContent = icon;
+    if (this.dom.narrativeTitle) this.dom.narrativeTitle.textContent = title;
+    if (this.dom.narrativeText) this.dom.narrativeText.textContent = text;
+    if (this.dom.narrativeBox) {
+      this.dom.narrativeBox.className = 'sync-narrative-box ' + stateClass;
+    }
   }
 
   renderCode() {
@@ -116,6 +140,12 @@ class SleepingBarberSim {
     if (this.dom.semBarber) this.dom.semBarber.textContent = this.barber;
     if (this.dom.semMutex) this.dom.semMutex.textContent = this.mutex;
 
+    // Statistics update
+    if (this.dom.statArrived) this.dom.statArrived.textContent = this.totalArrived;
+    if (this.dom.statServed) this.dom.statServed.textContent = this.totalServed;
+    if (this.dom.statWaiting) this.dom.statWaiting.textContent = `${this.waitingQueue.length} / ${this.numChairs}`;
+    if (this.dom.statBalked) this.dom.statBalked.textContent = this.totalBalked;
+
     // Barber chair update
     if (this.dom.barberChairZone) {
       if (this.barberState === 'cutting') {
@@ -123,7 +153,7 @@ class SleepingBarberSim {
         this.dom.barberChairZone.innerHTML = `
           <div style="font-size:2rem">✂️💈</div>
           <strong>Barber: Cutting Hair</strong>
-          <small style="color:var(--teal-400);">Customer #${this.activeCustomer}</small>
+          <small style="color:var(--teal-400); font-weight:700;">Customer #${this.activeCustomer}</small>
         `;
       } else {
         this.dom.barberChairZone.className = 'barber-chair-zone sleeping';
@@ -140,7 +170,7 @@ class SleepingBarberSim {
     // Status Badge
     if (this.dom.statusBadge) {
       if (this.barberState === 'cutting') {
-        this.dom.statusBadge.innerHTML = `<span style="color:var(--teal-400);">● BUSY: Haircut in progress (${this.waitingQueue.length} in waiting room)</span>`;
+        this.dom.statusBadge.innerHTML = `<span style="color:var(--teal-400);">● BUSY: Haircut in progress (${this.waitingQueue.length} waiting)</span>`;
       } else {
         this.dom.statusBadge.innerHTML = `<span style="color:var(--color-purple);">● ASLEEP: No waiting customers</span>`;
       }
@@ -149,6 +179,7 @@ class SleepingBarberSim {
 
   addCustomer() {
     const id = this.customerIdCounter++;
+    this.totalArrived++;
     this.highlightLine('check_chairs');
 
     if (this.barberState === 'sleeping') {
@@ -158,6 +189,12 @@ class SleepingBarberSim {
       this.barber = 1;
       this.customers = 0;
       this.highlightLine('wake_barber');
+      this.setNarrative(
+        '🔔',
+        `Customer #${id} Arrived & Woke Barber`,
+        `Customer #${id} entered the shop and found the barber sleeping. Customer executed signal(customers) and wait(barber) to wake up the barber. Haircut begins in the cutting chair!`,
+        'cs-active'
+      );
       this.log(`Customer #${id} arrives, finds Barber asleep, wakes Barber, and sits in Barber Chair!`, 'highlight');
     } else {
       // Barber is busy: check waiting room chairs
@@ -165,10 +202,23 @@ class SleepingBarberSim {
         this.waitingQueue.push(id);
         this.waitingCount = this.waitingQueue.length;
         this.customers = this.waitingCount;
+        this.setNarrative(
+          '🪑',
+          `Customer #${id} Sat in Waiting Chair #${this.waitingCount}`,
+          `Barber is busy cutting hair. Customer #${id} found a free chair and sits down. Waiting customers: ${this.waitingCount} / ${this.numChairs}.`,
+          ''
+        );
         this.log(`Customer #${id} arrives: Barber is busy. Customer sits in waiting chair #${this.waitingCount}.`, 'normal');
       } else {
         // Shop is full! Customer balks / leaves
+        this.totalBalked++;
         this.highlightLine('leave');
+        this.setNarrative(
+          '🚪',
+          `Customer #${id} Balked (Turned Away)`,
+          `All ${this.numChairs} waiting chairs are full! Customer #${id} cannot wait and left the shop immediately (Balking queue overflow handling).`,
+          'blocked'
+        );
         this.log(`Customer #${id} arrives: All ${this.numChairs} waiting chairs are FULL! Customer leaves (Balking).`, 'danger');
       }
     }
@@ -181,6 +231,7 @@ class SleepingBarberSim {
     if (this.barberState === 'cutting') {
       const finishedCust = this.activeCustomer;
       this.activeCustomer = null;
+      this.totalServed++;
       this.log(`Barber finished haircut for Customer #${finishedCust}.`, 'success');
 
       // Check if another customer is waiting in chairs
@@ -192,6 +243,12 @@ class SleepingBarberSim {
         this.barberState = 'cutting';
         this.barber = 1;
         this.highlightLine('barber_seat');
+        this.setNarrative(
+          '✂️',
+          `Haircut Done for #${finishedCust} → Next Customer #${nextCust}`,
+          `Barber completed Customer #${finishedCust}'s haircut! Barber checked the waiting room and signaled Customer #${nextCust} to move into the Barber Chair.`,
+          'cs-active'
+        );
         this.log(`Customer #${nextCust} moves from waiting chair to Barber Chair. Barber starts cutting.`, 'highlight');
       } else {
         // No customers waiting: barber goes to sleep!
@@ -199,6 +256,12 @@ class SleepingBarberSim {
         this.barber = 0;
         this.customers = 0;
         this.highlightLine('barber_sleep');
+        this.setNarrative(
+          '💈',
+          'Barber Falls Asleep (Waiting Room Empty)',
+          `Customer #${finishedCust} left satisfied. With 0 customers in the waiting chairs, the barber falls back asleep in the cutting chair.`,
+          ''
+        );
         this.log(`No customers left in waiting room. Barber falls asleep. 💤`, 'normal');
       }
       this.updateUI();
@@ -243,11 +306,19 @@ class SleepingBarberSim {
     this.barberState = 'sleeping';
     this.activeCustomer = null;
     this.customerIdCounter = 1;
+    this.totalArrived = 0;
+    this.totalServed = 0;
+    this.totalBalked = 0;
     this.updateUI();
     this.highlightLine(null);
+    this.setNarrative(
+      '💈',
+      'Barbershop Status: Barber Sleeping (No Customers)',
+      'The shop is empty. The barber is sleeping in the chair (customers = 0, barber = 0). When a customer arrives, they will wake the barber; if the barber is cutting hair, arriving customers will take a waiting chair or leave if all 4 chairs are full.',
+      ''
+    );
     this.log('Sleeping Barber simulation reset to initial state.', 'highlight');
   }
 }
 
 window.SleepingBarberSim = SleepingBarberSim;
-

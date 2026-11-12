@@ -122,9 +122,18 @@ git init
 git add .
 git commit -m "Initial commit: Process Synchronization & Memory Management Visualizer"
 git branch -M main
-git remote add origin <your-github-repo-url>
+git remote add origin https://github.com/SamridhiParashar-28/os-v2.git
 git push -u origin main
 ```
+
+### 🌐 GitHub Pages Deployment
+1. Go to your repository settings on GitHub: **Settings → Pages**.
+2. Under **Build and deployment**:
+   - Source: **Deploy from a branch**
+   - Branch: **`main`**
+   - Folder: **`/ (root)`**
+3. Click **Save**. Your visualizer is accessible at:
+   👉 **`https://samridhiparashar-28.github.io/os-v2/`**
 
 Verify that `git status` does **not** track `.env` or `task-tracker.json`.
 

@@ -38,13 +38,42 @@ class ReadersWritersSim {
       btnReset: document.getElementById('rw-btn-reset'),
       btnAddReader: document.getElementById('rw-btn-add-reader'),
       btnAddWriter: document.getElementById('rw-btn-add-writer'),
-      speedSlider: document.getElementById('rw-speed')
+      speedSlider: document.getElementById('rw-speed'),
+
+      // Enhanced Visual Elements
+      narrativeBox: document.getElementById('rw-narrative-box'),
+      narrativeTitle: document.getElementById('rw-narrative-title'),
+      narrativeText: document.getElementById('rw-narrative-text'),
+      narrativeIcon: document.getElementById('rw-narrative-icon'),
+      pipelineSteps: [1, 2, 3, 4, 5].map(i => document.getElementById(`rw-pipe-${i}`))
     };
 
     this.renderCode();
     this.updateUI();
     this.bindEvents();
     this.log('Readers-Writers simulation initialized. rw_mutex = 1, mutex = 1, read_count = 0.');
+  }
+
+  setNarrative(icon, title, text, stateClass = '') {
+    if (this.dom.narrativeIcon) this.dom.narrativeIcon.textContent = icon;
+    if (this.dom.narrativeTitle) this.dom.narrativeTitle.textContent = title;
+    if (this.dom.narrativeText) this.dom.narrativeText.textContent = text;
+    if (this.dom.narrativeBox) {
+      this.dom.narrativeBox.className = 'sync-narrative-box ' + stateClass;
+    }
+  }
+
+  setPipelineStep(stepIndex, isBlocked = false, isCS = false) {
+    if (!this.dom.pipelineSteps) return;
+    this.dom.pipelineSteps.forEach((el, idx) => {
+      if (!el) return;
+      el.className = 'pipeline-step';
+      if (idx + 1 === stepIndex) {
+        el.classList.add('active');
+        if (isBlocked) el.classList.add('blocked');
+        if (isCS) el.classList.add('cs');
+      }
+    });
   }
 
   renderCode() {
@@ -149,6 +178,12 @@ class ReadersWritersSim {
     const id = this.readerIdCounter++;
     this.waitingReaders.push(id);
     this.log(`Reader #${id} arrived and queued.`, 'highlight');
+    this.setNarrative(
+      '📖',
+      `Reader #${id} Arrived`,
+      `Reader #${id} joined the waiting queue. If the database is free or other readers are reading, Reader #${id} will enter immediately.`,
+      ''
+    );
     this.updateUI();
   }
 
@@ -156,6 +191,12 @@ class ReadersWritersSim {
     const id = this.writerIdCounter++;
     this.waitingWriters.push(id);
     this.log(`Writer #${id} arrived and queued for exclusive lock.`, 'warn');
+    this.setNarrative(
+      '✍️',
+      `Writer #${id} Arrived (Requesting Exclusive Access)`,
+      `Writer #${id} joined the waiting queue. Writers require exclusive access and must wait until all active readers have finished.`,
+      'blocked'
+    );
     this.updateUI();
   }
 
@@ -166,6 +207,13 @@ class ReadersWritersSim {
       this.activeWriter = null;
       this.rwMutex = 1;
       this.highlightLine('writer_signal');
+      this.setPipelineStep(5);
+      this.setNarrative(
+        '🔓',
+        `Writer #${finishedWriter} Finished & Released Lock`,
+        `Writer #${finishedWriter} completed its write operation and signaled rw_mutex (rw_mutex = 1). The database is now unlocked for waiting readers or writers.`,
+        ''
+      );
       this.log(`Writer #${finishedWriter} finished writing and released rw_mutex lock.`, 'success');
       this.updateUI();
       return;
@@ -181,7 +229,21 @@ class ReadersWritersSim {
       if (this.readCount === 0) {
         this.rwMutex = 1;
         this.highlightLine('reader_release_writer');
+        this.setPipelineStep(5);
+        this.setNarrative(
+          '🔓',
+          `Last Reader Exited: Released rw_mutex`,
+          `Reader #${finishedReader} was the LAST active reader (read_count = 0). It signaled rw_mutex, reopening the database for waiting writers.`,
+          ''
+        );
         this.log(`Last reader left. Released rw_mutex (Writers may now proceed).`, 'success');
+      } else {
+        this.setNarrative(
+          '📖',
+          `Reader #${finishedReader} Exited`,
+          `Reader #${finishedReader} finished. Remaining active readers: ${this.readCount}. The database remains locked for writers until all readers finish.`,
+          'cs-active'
+        );
       }
       this.updateUI();
       return;
@@ -194,10 +256,24 @@ class ReadersWritersSim {
         if (this.rwMutex === 1) {
           this.rwMutex = 0; // First reader locks out writers
           this.highlightLine('reader_lock_writer');
+          this.setPipelineStep(3, false, true);
+          this.setNarrative(
+            '🔒',
+            `Reader #${readerId} is FIRST Reader: Locked rw_mutex`,
+            `Reader #${readerId} arrived as the 1st reader. It acquired rw_mutex (rw_mutex = 0) to prevent any writer from modifying data. Subsequent readers enter without re-locking!`,
+            'cs-active'
+          );
           this.log(`Reader #${readerId} is 1st reader: Acquired rw_mutex lock (writers blocked).`, 'highlight');
         } else {
           // Locked by writer, reader must wait
           this.waitingReaders.unshift(readerId);
+          this.setPipelineStep(1, true);
+          this.setNarrative(
+            '⛔',
+            `Reader #${readerId} Blocked by Active Writer`,
+            `Reader #${readerId} cannot enter because a writer currently holds exclusive lock on the database.`,
+            'blocked'
+          );
           this.log(`Reader #${readerId} blocked: Writer holds database lock.`, 'warn');
           this.updateUI();
           return;
@@ -206,6 +282,7 @@ class ReadersWritersSim {
       this.readCount++;
       this.activeReaders.push(readerId);
       this.highlightLine('reader_reading');
+      this.setPipelineStep(4, false, true);
       this.log(`Reader #${readerId} entered database. Total concurrent readers: ${this.readCount}.`, 'highlight');
       this.updateUI();
       return;
@@ -217,6 +294,13 @@ class ReadersWritersSim {
       this.rwMutex = 0;
       this.activeWriter = writerId;
       this.highlightLine('writer_writing');
+      this.setPipelineStep(4, false, true);
+      this.setNarrative(
+        '✍️',
+        `Writer #${writerId} Acquired Exclusive Access`,
+        `Writer #${writerId} locked rw_mutex (rw_mutex = 0) and entered the database. All readers and other writers are strictly blocked.`,
+        'blocked'
+      );
       this.log(`Writer #${writerId} acquired exclusive rw_mutex and entered database.`, 'danger');
       this.updateUI();
       return;
@@ -269,9 +353,15 @@ class ReadersWritersSim {
     this.writerIdCounter = 1;
     this.updateUI();
     this.highlightLine(null);
+    this.setPipelineStep(1);
+    this.setNarrative(
+      '📖',
+      'Database Concurrency Status: Idle & Unlocked',
+      'The shared database is currently idle. Readers may enter concurrently without mutual exclusion among themselves. Any writer wishing to enter requires strictly exclusive access.',
+      ''
+    );
     this.log('Readers-Writers simulation reset.', 'highlight');
   }
 }
 
 window.ReadersWritersSim = ReadersWritersSim;
-

@@ -18,8 +18,8 @@ class ProducerConsumerSim {
     this.timer = null;
     this.stepIndex = 0;
     this.activeActor = null; // 'producer' or 'consumer'
-    this.currentPhase = 'idle'; // produce, wait_empty, wait_mutex, insert, signal_mutex, signal_full, wait_full, wait_mutex_c, remove, signal_mutex_c, signal_empty, consume
-    this.queue = []; // pending actions
+    this.currentPhase = 'idle';
+    this.queue = [];
 
     this.initDOM();
   }
@@ -41,7 +41,15 @@ class ProducerConsumerSim {
       btnReset: document.getElementById('pc-btn-reset'),
       btnProduce: document.getElementById('pc-btn-produce'),
       btnConsume: document.getElementById('pc-btn-consume'),
-      speedSlider: document.getElementById('pc-speed')
+      speedSlider: document.getElementById('pc-speed'),
+
+      // Enhanced Visual Elements
+      narrativeBox: document.getElementById('pc-narrative-box'),
+      narrativeTitle: document.getElementById('pc-narrative-title'),
+      narrativeText: document.getElementById('pc-narrative-text'),
+      narrativeIcon: document.getElementById('pc-narrative-icon'),
+      invariantBadge: document.getElementById('pc-invariant-badge'),
+      pipelineSteps: [1, 2, 3, 4, 5, 6].map(i => document.getElementById(`pc-pipe-${i}`))
     };
 
     this.renderBuffer();
@@ -49,6 +57,28 @@ class ProducerConsumerSim {
     this.updateSemaphores();
     this.bindEvents();
     this.log('Simulation initialized. Buffer size = ' + this.bufferSize + ', Mutex = 1, Empty = ' + this.bufferSize + ', Full = 0.');
+  }
+
+  setNarrative(icon, title, text, stateClass = '') {
+    if (this.dom.narrativeIcon) this.dom.narrativeIcon.textContent = icon;
+    if (this.dom.narrativeTitle) this.dom.narrativeTitle.textContent = title;
+    if (this.dom.narrativeText) this.dom.narrativeText.textContent = text;
+    if (this.dom.narrativeBox) {
+      this.dom.narrativeBox.className = 'sync-narrative-box ' + stateClass;
+    }
+  }
+
+  setPipelineStep(stepIndex, isBlocked = false, isCS = false) {
+    if (!this.dom.pipelineSteps) return;
+    this.dom.pipelineSteps.forEach((el, idx) => {
+      if (!el) return;
+      el.className = 'pipeline-step';
+      if (idx + 1 === stepIndex) {
+        el.classList.add('active');
+        if (isBlocked) el.classList.add('blocked');
+        if (isCS) el.classList.add('cs');
+      }
+    });
   }
 
   renderCode() {
@@ -100,10 +130,10 @@ class ProducerConsumerSim {
       const isPIn = idx === this.in;
       const isCOut = idx === this.out;
       return `
-        <div class="buffer-slot ${isFilled ? 'filled' : ''}" title="Index ${idx}">
+        <div class="buffer-slot ${isFilled ? 'filled' : ''}" title="Buffer Slot Index ${idx}">
           ${isFilled ? `📦 #${item}` : `Slot ${idx}`}
-          ${isPIn ? '<span style="position:absolute; bottom:-16px; font-size:9px; color:var(--teal-400);">IN</span>' : ''}
-          ${isCOut ? '<span style="position:absolute; top:-16px; font-size:9px; color:var(--color-warning);">OUT</span>' : ''}
+          ${isPIn ? '<span style="position:absolute; bottom:-16px; font-size:9px; font-weight:700; color:var(--teal-400);">IN</span>' : ''}
+          ${isCOut ? '<span style="position:absolute; top:-16px; font-size:9px; font-weight:700; color:var(--color-warning);">OUT</span>' : ''}
         </div>
       `;
     }).join('');
@@ -113,6 +143,9 @@ class ProducerConsumerSim {
     if (this.dom.semMutex) this.dom.semMutex.textContent = this.mutex;
     if (this.dom.semEmpty) this.dom.semEmpty.textContent = this.empty;
     if (this.dom.semFull) this.dom.semFull.textContent = this.full;
+    if (this.dom.invariantBadge) {
+      this.dom.invariantBadge.textContent = `✓ empty (${this.empty}) + full (${this.full}) = ${this.bufferSize}`;
+    }
   }
 
   log(text, type = 'normal') {
@@ -154,10 +187,8 @@ class ProducerConsumerSim {
   }
 
   step() {
-    // Determine action: either from queue or alternating producer/consumer
     let action = this.queue.shift();
     if (!action) {
-      // Auto generator: weighted randomized choice
       if (this.full === 0) action = 'produce';
       else if (this.empty === 0) action = 'consume';
       else action = Math.random() > 0.45 ? 'produce' : 'consume';
@@ -175,6 +206,13 @@ class ProducerConsumerSim {
     if (this.empty === 0) {
       this.log('Producer BLOCKED: Buffer is FULL (empty = 0). Producer must wait on signal(empty).', 'warn');
       this.highlightLine('wait_empty');
+      this.setPipelineStep(2, true, false);
+      this.setNarrative(
+        '⛔',
+        'Producer Blocked: Buffer Full',
+        `The shared buffer is completely full (${this.bufferSize} items stored, empty = 0). The Producer cannot write and is blocked on wait(empty) until a Consumer frees a slot.`,
+        'blocked'
+      );
       if (this.dom.producerNode) {
         this.dom.producerNode.className = 'actor-node waiting';
         this.dom.producerNode.innerHTML = `<strong>Producer</strong><br><small style="color:var(--color-warning);">Blocked (Buffer Full)</small>`;
@@ -190,6 +228,13 @@ class ProducerConsumerSim {
 
     this.log(`Producer produced Item #${newItem}. Acquired mutex. Entering Critical Section.`, 'highlight');
     this.highlightLine('insert');
+    this.setPipelineStep(4, false, true);
+    this.setNarrative(
+      '🔒',
+      `Producer in Critical Section: Writing Item #${newItem}`,
+      `Producer acquired mutex (mutex = 0) and decremented empty (${this.empty} slots remaining). Writing Item #${newItem} into Buffer Slot ${this.in}. Critical Section guarantees no consumer can read this slot simultaneously.`,
+      'cs-active'
+    );
 
     // Visual CS locked
     if (this.dom.csZone) this.dom.csZone.className = 'cs-zone occupied';
@@ -210,6 +255,13 @@ class ProducerConsumerSim {
       this.full++;
       this.updateSemaphores();
       this.highlightLine('signal_full');
+      this.setPipelineStep(6, false, false);
+      this.setNarrative(
+        '✅',
+        `Producer Released Mutex & Signaled Full`,
+        `Producer released mutex (mutex = 1) and signaled full (${this.full} items now ready). The critical section is now free for consumers or producers.`,
+        ''
+      );
       this.log(`Producer released mutex & signaled full (${this.full} items available).`, 'success');
 
       if (this.dom.csZone) this.dom.csZone.className = 'cs-zone free';
@@ -218,7 +270,7 @@ class ProducerConsumerSim {
         this.dom.producerNode.className = 'actor-node';
         this.dom.producerNode.innerHTML = `<strong>Producer</strong><br><small>Idle / Ready</small>`;
       }
-    }, 400 / this.speedMultiplier);
+    }, 450 / this.speedMultiplier);
   }
 
   executeConsumerStep() {
@@ -226,6 +278,13 @@ class ProducerConsumerSim {
     if (this.full === 0) {
       this.log('Consumer BLOCKED: Buffer is EMPTY (full = 0). Consumer must wait on signal(full).', 'warn');
       this.highlightLine('wait_full');
+      this.setPipelineStep(2, true, false);
+      this.setNarrative(
+        '⛔',
+        'Consumer Blocked: Buffer Empty',
+        'There are 0 items in the buffer (full = 0). The Consumer cannot extract any data and is blocked on wait(full) until the Producer generates an item.',
+        'blocked'
+      );
       if (this.dom.consumerNode) {
         this.dom.consumerNode.className = 'actor-node waiting';
         this.dom.consumerNode.innerHTML = `<strong>Consumer</strong><br><small style="color:var(--color-warning);">Blocked (Buffer Empty)</small>`;
@@ -240,6 +299,13 @@ class ProducerConsumerSim {
     const consumedItem = this.buffer[this.out];
     this.log(`Consumer acquired mutex. Entering Critical Section to fetch item #${consumedItem} from slot ${this.out}.`, 'highlight');
     this.highlightLine('remove');
+    this.setPipelineStep(4, false, true);
+    this.setNarrative(
+      '🔒',
+      `Consumer in Critical Section: Extracting Item #${consumedItem}`,
+      `Consumer acquired mutex (mutex = 0) and decremented full (${this.full} items remaining). Extracting Item #${consumedItem} from Slot ${this.out}. Critical section ensures index consistency.`,
+      'cs-active'
+    );
 
     // Visual CS locked
     if (this.dom.csZone) this.dom.csZone.className = 'cs-zone occupied';
@@ -258,6 +324,13 @@ class ProducerConsumerSim {
       this.empty++;
       this.updateSemaphores();
       this.highlightLine('signal_empty');
+      this.setPipelineStep(6, false, false);
+      this.setNarrative(
+        '✅',
+        `Consumer Released Mutex & Signaled Empty`,
+        `Consumer consumed Item #${consumedItem}, released mutex (mutex = 1), and signaled empty (${this.empty} slots free now). Critical section unlocked.`,
+        ''
+      );
       this.log(`Consumer consumed Item #${consumedItem}. Released mutex and signaled empty (${this.empty} slots free).`, 'success');
 
       if (this.dom.csZone) this.dom.csZone.className = 'cs-zone free';
@@ -266,7 +339,7 @@ class ProducerConsumerSim {
         this.dom.consumerNode.className = 'actor-node';
         this.dom.consumerNode.innerHTML = `<strong>Consumer</strong><br><small>Idle / Ready</small>`;
       }
-    }, 400 / this.speedMultiplier);
+    }, 450 / this.speedMultiplier);
   }
 
   reset() {
@@ -282,6 +355,13 @@ class ProducerConsumerSim {
     this.renderBuffer();
     this.updateSemaphores();
     this.highlightLine(null);
+    this.setPipelineStep(1);
+    this.setNarrative(
+      '📦',
+      'Bounded Buffer: Ready for Execution',
+      'Initial State: Buffer is empty (empty = 6, full = 0). Mutex = 1 (Critical Section unlocked). The Producer is ready to generate items; Consumers must wait until at least one item is produced.',
+      ''
+    );
     if (this.dom.csZone) this.dom.csZone.className = 'cs-zone free';
     if (this.dom.csStateBadge) this.dom.csStateBadge.innerHTML = `<span style="color:var(--color-success);">● UNLOCKED: Critical Section Free</span>`;
     if (this.dom.producerNode) this.dom.producerNode.innerHTML = `<strong>Producer</strong><br><small>Ready</small>`;
@@ -291,4 +371,3 @@ class ProducerConsumerSim {
 }
 
 window.ProducerConsumerSim = ProducerConsumerSim;
-

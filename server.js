@@ -11,6 +11,7 @@ const TRACKER_FILE = path.join(__dirname, 'task-tracker.json');
 // Middleware
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
 
 // Default task template if task-tracker.json is missing
 const defaultTrackerData = {
@@ -166,7 +167,11 @@ app.post('/api/progress/reset', (req, res) => {
 
 // Fallback to index.html for single-page style navigation
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  if (fs.existsSync(path.join(__dirname, 'index.html'))) {
+    res.sendFile(path.join(__dirname, 'index.html'));
+  } else {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
 });
 
 // Start server

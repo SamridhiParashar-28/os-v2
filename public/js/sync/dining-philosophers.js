@@ -13,7 +13,7 @@ class DiningPhilosophersSim {
 
     // Chopsticks semaphores: 1 = available, 0 = taken
     this.chopsticks = [1, 1, 1, 1, 1];
-    this.deadlockMode = false;
+    this.chopstickOwners = [null, null, null, null, null]; // who holds it
 
     this.isPlaying = false;
     this.speedMultiplier = 1;
@@ -33,7 +33,15 @@ class DiningPhilosophersSim {
       btnStep: document.getElementById('dp-btn-step'),
       btnReset: document.getElementById('dp-btn-reset'),
       btnDeadlock: document.getElementById('dp-btn-deadlock'),
-      speedSlider: document.getElementById('dp-speed')
+      speedSlider: document.getElementById('dp-speed'),
+
+      // Enhanced Visual Elements
+      narrativeBox: document.getElementById('dp-narrative-box'),
+      narrativeTitle: document.getElementById('dp-narrative-title'),
+      narrativeText: document.getElementById('dp-narrative-text'),
+      narrativeIcon: document.getElementById('dp-narrative-icon'),
+      deadlockBanner: document.getElementById('dp-deadlock-banner'),
+      chopstickTags: [0, 1, 2, 3, 4].map(i => document.getElementById(`dp-chop-tag-${i}`))
     };
 
     this.renderCircle();
@@ -41,6 +49,15 @@ class DiningPhilosophersSim {
     this.updateUI();
     this.bindEvents();
     this.log('Dining Philosophers simulation initialized. 5 Philosophers, 5 Chopsticks.');
+  }
+
+  setNarrative(icon, title, text, stateClass = '') {
+    if (this.dom.narrativeIcon) this.dom.narrativeIcon.textContent = icon;
+    if (this.dom.narrativeTitle) this.dom.narrativeTitle.textContent = title;
+    if (this.dom.narrativeText) this.dom.narrativeText.textContent = text;
+    if (this.dom.narrativeBox) {
+      this.dom.narrativeBox.className = 'sync-narrative-box ' + stateClass;
+    }
   }
 
   renderCode() {
@@ -78,7 +95,7 @@ class DiningPhilosophersSim {
       </div>
     `;
 
-    const arenaRadius = 135; // px from center
+    const arenaRadius = 135;
     const chopstickRadius = 85;
 
     // Render 5 Philosophers
@@ -138,7 +155,9 @@ class DiningPhilosophersSim {
   }
 
   updateUI() {
-    // Update Chopstick Semaphores
+    const deadlocked = this.isDeadlocked();
+
+    // Update Chopstick Semaphores & Ownership Tags
     for (let i = 0; i < 5; i++) {
       if (this.dom.chopstickBadges[i]) {
         this.dom.chopstickBadges[i].textContent = this.chopsticks[i];
@@ -151,10 +170,24 @@ class DiningPhilosophersSim {
           chopEl.classList.remove('taken');
         }
       }
+
+      if (this.dom.chopstickTags[i]) {
+        if (deadlocked) {
+          this.dom.chopstickTags[i].className = 'chopstick-owner-tag deadlocked';
+          this.dom.chopstickTags[i].innerHTML = `🥢 C${i}: <strong style="color:var(--color-danger);">Held by P${i} (Blocked)</strong>`;
+        } else if (this.chopsticks[i] === 0) {
+          const owner = this.chopstickOwners[i];
+          this.dom.chopstickTags[i].className = 'chopstick-owner-tag held';
+          this.dom.chopstickTags[i].innerHTML = `🥢 C${i}: <strong style="color:var(--teal-400);">Held by P${owner !== null ? owner : '?'}</strong>`;
+        } else {
+          this.dom.chopstickTags[i].className = 'chopstick-owner-tag';
+          this.dom.chopstickTags[i].innerHTML = `🥢 C${i}: <span style="color:var(--text-muted);">Free</span>`;
+        }
+      }
     }
 
     // Update Philosophers
-    let eatingCount = 0;
+    let eatingPhilosophers = [];
     for (let i = 0; i < 5; i++) {
       const p = this.philosophers[i];
       const seat = document.getElementById(`dp-seat-${i}`);
@@ -164,17 +197,33 @@ class DiningPhilosophersSim {
         const label = p.state === 'eating' ? 'Eating' : p.state === 'hungry' ? 'Hungry' : 'Thinking';
         seat.innerHTML = `<span>${icon} P${i}</span><small style="font-size:9px">${label}</small>`;
       }
-      if (p.state === 'eating') eatingCount++;
+      if (p.state === 'eating') eatingPhilosophers.push(i);
     }
 
-    // Status Badge
+    // Status Badge & Narrative
     if (this.dom.statusBadge) {
-      if (this.isDeadlocked()) {
+      if (deadlocked) {
         this.dom.statusBadge.innerHTML = `<span style="color:var(--color-danger);font-weight:bold;">⚠️ DEADLOCK DETECTED! (Circular Wait: all holding 1 chopstick)</span>`;
-      } else if (eatingCount > 0) {
-        this.dom.statusBadge.innerHTML = `<span style="color:var(--color-success);">● EATING IN PROGRESS (${eatingCount} philosophers eating simultaneously)</span>`;
+        if (this.dom.deadlockBanner) this.dom.deadlockBanner.style.display = 'block';
+        this.setNarrative(
+          '⚠️',
+          'Deadlock State: Circular Wait Formed',
+          'Every philosopher has acquired their left chopstick and is blocked waiting for their right chopstick held by their neighbor! Coffman conditions satisfied: Mutual Exclusion, Hold & Wait, No Preemption, Circular Wait. Reset to restore normal execution.',
+          'blocked'
+        );
       } else {
-        this.dom.statusBadge.innerHTML = `<span style="color:var(--teal-400);">● RUNNING: All philosophers thinking or waiting</span>`;
+        if (this.dom.deadlockBanner) this.dom.deadlockBanner.style.display = 'none';
+        if (eatingPhilosophers.length > 0) {
+          this.dom.statusBadge.innerHTML = `<span style="color:var(--color-success);">● EATING IN PROGRESS (${eatingPhilosophers.map(id => 'P' + id).join(' & ')} eating simultaneously)</span>`;
+          this.setNarrative(
+            '😋',
+            `Philosopher ${eatingPhilosophers.map(id => 'P' + id).join(' and ')} are Eating`,
+            `Concurrent Eating: Philosophers ${eatingPhilosophers.map(id => 'P' + id).join(' & ')} acquired both their required chopsticks. Maximum 2 non-adjacent philosophers can eat simultaneously in a 5-chair dining setup.`,
+            'cs-active'
+          );
+        } else {
+          this.dom.statusBadge.innerHTML = `<span style="color:var(--teal-400);">● RUNNING: All philosophers thinking or waiting</span>`;
+        }
       }
     }
   }
@@ -187,6 +236,12 @@ class DiningPhilosophersSim {
     if (this.philosophers[id].state === 'thinking') {
       this.philosophers[id].state = 'hungry';
       this.log(`Philosopher ${id} is now HUNGRY and wants chopsticks C${this.philosophers[id].leftChopstick} & C${this.philosophers[id].rightChopstick}.`, 'warn');
+      this.setNarrative(
+        '🤤',
+        `Philosopher P${id} is Hungry`,
+        `Philosopher P${id} wants to eat. Needs both Chopstick C${this.philosophers[id].leftChopstick} (left) and C${this.philosophers[id].rightChopstick} (right). Waiting for chopsticks to become available.`,
+        ''
+      );
       this.updateUI();
     }
   }
@@ -197,6 +252,7 @@ class DiningPhilosophersSim {
     for (let i = 0; i < 5; i++) {
       this.philosophers[i].state = 'hungry';
       this.chopsticks[i] = 0; // Take left chopstick
+      this.chopstickOwners[i] = i;
     }
     this.log('🚨 DEADLOCK SIMULATION TRIGGERED: Every philosopher holds their left chopstick and waits indefinitely for their right!', 'danger');
     this.highlightLine('left_fork');
@@ -214,10 +270,18 @@ class DiningPhilosophersSim {
           // Finished eating: release chopsticks
           this.chopsticks[p.leftChopstick] = 1;
           this.chopsticks[p.rightChopstick] = 1;
+          this.chopstickOwners[p.leftChopstick] = null;
+          this.chopstickOwners[p.rightChopstick] = null;
           p.state = 'thinking';
           p.eatDuration = 0;
           this.highlightLine('drop_left');
           this.log(`Philosopher ${p.id} finished eating. Released chopsticks C${p.leftChopstick} and C${p.rightChopstick}. Now thinking.`, 'success');
+          this.setNarrative(
+            '🧠',
+            `Philosopher P${p.id} Finished Eating`,
+            `Philosopher P${p.id} finished eating, released chopsticks C${p.leftChopstick} & C${p.rightChopstick}, and transitioned back to thinking. Neighbors can now acquire these chopsticks.`,
+            ''
+          );
           stateChanged = true;
         }
       }
@@ -234,6 +298,8 @@ class DiningPhilosophersSim {
         if (this.chopsticks[left] === 1 && this.chopsticks[right] === 1) {
           this.chopsticks[left] = 0;
           this.chopsticks[right] = 0;
+          this.chopstickOwners[left] = p.id;
+          this.chopstickOwners[right] = p.id;
           p.state = 'eating';
           p.eatDuration = 0;
           this.highlightLine('eat');
@@ -283,6 +349,7 @@ class DiningPhilosophersSim {
   reset() {
     this.stopAutoPlay();
     this.chopsticks = [1, 1, 1, 1, 1];
+    this.chopstickOwners = [null, null, null, null, null];
     this.philosophers = Array.from({ length: 5 }, (_, i) => ({
       id: i,
       state: 'thinking',
@@ -290,11 +357,17 @@ class DiningPhilosophersSim {
       rightChopstick: (i + 1) % 5,
       eatDuration: 0
     }));
+    if (this.dom.deadlockBanner) this.dom.deadlockBanner.style.display = 'none';
     this.updateUI();
     this.highlightLine(null);
+    this.setNarrative(
+      '🍝',
+      'Philosophers State: Active Thinking',
+      'All 5 philosophers are currently thinking. Each philosopher requires both their left and right chopsticks to eat. An asymmetric pickup protocol is active to eliminate circular wait and prevent deadlock.',
+      ''
+    );
     this.log('Dining Philosophers simulation reset.', 'highlight');
   }
 }
 
 window.DiningPhilosophersSim = DiningPhilosophersSim;
-
